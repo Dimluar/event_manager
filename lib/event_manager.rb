@@ -48,12 +48,21 @@ def clean_phone_number(phone_number)
   end
 end
 
+def get_complete_time(row)
+  date = get_date(row)
+  time = get_time(row)
+  date.concat(time)
+end
+
+def get_time(row)
+  converted_row = row.split
+  converted_row[1].split(':').map(&:to_i)
+end
+
 def get_date(row)
   converted_row = row.split
   date = converted_row[0].split('/')
-  date = clean_date(date)
-  time = converted_row[1].split(':')
-  date.concat(time).map(&:to_i)
+  clean_date(date).map(&:to_i)
 end
 
 def clean_date(date)
@@ -63,7 +72,7 @@ def clean_date(date)
   date
 end
 
-def get_most_frequent_hour(array)
+def get_most_frequent(array)
   counts = array.tally
   greatest_count = counts.reduce([0, 0]) do |result, values|
     values[1] > result[1] ? values : result
@@ -73,6 +82,16 @@ def get_most_frequent_hour(array)
     values[0] if values[1] == greatest_count[1]
   end
 end
+
+WEEKDAYS = {
+  0 => 'Sunday',
+  1 => 'Monday',
+  2 => 'Tuesday',
+  3 => 'Wednesday',
+  4 => 'Thursday',
+  5 => 'Friday',
+  6 => 'Saturday'
+}.freeze
 
 puts "\nEventManager initialized"
 puts "\n"
@@ -87,11 +106,17 @@ template_letter = File.read('form_letter.html')
 erb_template = ERB.new template_letter
 
 hours = []
+days = []
+
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
-  date = Time.new(*get_date(row[:regdate]))
-  hours.push(date.hour)
+  time = Time.new(*get_complete_time(row[:regdate]))
+  hours.push(time.hour)
+
+  date = Date.new(*get_date(row[:regdate]))
+  days.push(date.wday)
+
   phone_number = clean_phone_number(row[:homephone])
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
@@ -104,5 +129,9 @@ contents.each do |row|
 end
 
 print "\nMore frequent hours: "
-get_most_frequent_hour(hours).each { |value| print "#{value}:00 " }
+get_most_frequent(hours).each { |value| print "#{value}:00 " }
+puts ''
+
+print "\nMore frequent days of the week: "
+get_most_frequent(days).each { |value| print "#{WEEKDAYS[value]} " }
 puts ''
