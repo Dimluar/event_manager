@@ -27,6 +27,14 @@ def legislators_by_zipcode(zip)
   end
 end
 
+def save_thank_you_letter(id, form_letter)
+  Dir.mkdir('output') unless Dir.exist?('output')
+
+  filename = "output/thaks_#{id}.html"
+
+  File.open(filename, 'w') { |file| file.puts form_letter }
+end
+
 puts "\nEventManager initialized"
 
 contents = CSV.open(
@@ -39,12 +47,12 @@ template_letter = File.read('form_letter.html')
 erb_template = ERB.new template_letter
 
 contents.each do |row|
+  id = row[0]
   name = row[:first_name]
-
   zipcode = clean_zipcode(row[:zipcode])
-
   legislators = legislators_by_zipcode(zipcode)
 
   form_letter = erb_template.result(binding)
-  puts form_letter
+
+  save_thank_you_letter(id, form_letter)
 end
