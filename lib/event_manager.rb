@@ -35,6 +35,19 @@ def save_thank_you_letter(id, form_letter)
   File.open(filename, 'w') { |file| file.puts form_letter }
 end
 
+def clean_phone_number(phone_number)
+  phone_number = phone_number.tr('()', '').tr(' ', '').tr('-', '').tr('.', '')
+
+  digits = phone_number.length
+  return 'Invalid phone number' if digits < 10 || (digits > 10 && phone_number[0] != '1')
+
+  if digits > 10
+    phone_number[1...digits]
+  else
+    phone_number
+  end
+end
+
 puts "\nEventManager initialized"
 
 contents = CSV.open(
@@ -49,10 +62,13 @@ erb_template = ERB.new template_letter
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
+  phone_number = clean_phone_number(row[:homephone])
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
 
   form_letter = erb_template.result(binding)
 
   save_thank_you_letter(id, form_letter)
+
+  puts "#{name}: #{phone_number}"
 end
