@@ -4,7 +4,7 @@
     <title>Thank You!</title>
   </head>
   <body>
-    <h1>Thanks FIRST_NAME!</h1>
+    <h1>Thanks <%= name %></h1>
     <p>
       Thanks for coming to our conference. We couldn't have done it without you!
     </p>
@@ -16,12 +16,20 @@
     </p>
 
     <table>
+      <% if legislators.kind_of?(Array) %>
+      <th>Name</th>
+      <th>Website</th>
+      <% legislators.each do |legislator| %>
       <tr>
-        <th>Legislators</th>
+        <td><%= "#{legislator.name}" %></td>
+        <td>
+          <%= "#{legislator.urls.join(" ")}" unless legislator.urls.nil? %>
+        </td>
       </tr>
-      <tr>
-        <td>LEGISLATORS</td>
-      </tr>
+      <% end %> <% else %>
+      <th></th>
+      <td><%= "#{legislators}" %></td>
+      <% end %>
     </table>
   </body>
 </html>
